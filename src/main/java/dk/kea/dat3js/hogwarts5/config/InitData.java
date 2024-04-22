@@ -44,9 +44,9 @@ public class InitData implements CommandLineRunner {
     Student george = new Student("George", "Fabian", "Weasley", gryffindor, 5);
     Student percy = new Student("Percy", "Ignatius", "Weasley", gryffindor, 5);
 
-    Student draco = new Student("Draco", "", "Malfoy", slytherin, 5);
-    Student cedric = new Student("Cedric", "", "Diggory", hufflepuff, 6);
-    Student luna = new Student("Luna", "", "Lovegood", ravenclaw, 4);
+    Student draco = new Student("Draco", "Malfoy", slytherin, 5);
+    Student cedric = new Student("Cedric", "Diggory", hufflepuff, 6);
+    Student luna = new Student("Luna", "Lovegood", ravenclaw, 4);
 
     existingStudents.addAll(List.of(harry, hermione, ron, neville, ginny, fred, george, percy, draco, cedric, luna));
     studentRepository.saveAll(existingStudents);
