@@ -1,5 +1,6 @@
 package dk.kea.dat3js.hogwarts5.students;
 
+import dk.kea.dat3js.hogwarts5.errorhandling.ValidationException;
 import dk.kea.dat3js.hogwarts5.house.HouseService;
 import org.springframework.stereotype.Service;
 
@@ -58,11 +59,37 @@ public class StudentService {
       if(student.schoolYear() != null) {
         studentToUpdate.setSchoolYear(student.schoolYear());
       }
+      if(student.isPrefect()) {
+        if(checkIfPrefectIsAssignable(studentToUpdate)) {
+          studentToUpdate.setPrefect(true);
+        } else {
+          throw new ValidationException("Prefect is not assignable");
+        }
+      } else {
+        studentToUpdate.setPrefect(false);
+      }
       return Optional.of(toDTO(studentRepository.save(studentToUpdate)));
     } else {
       // TODO: handle error
       return Optional.empty();
     }
+  }
+  private boolean checkIfPrefectIsAssignable(Student newPrefect) {
+    List<Student> prefectsInSameHouse = studentRepository.findAll().stream()
+            .filter(s -> s.getHouse().equals(newPrefect.getHouse()) && s.isPrefect())
+            .toList();
+
+    if(prefectsInSameHouse.size() >= 2) {
+      return false;
+    }
+
+    if(prefectsInSameHouse.size() == 1) {
+      if (prefectsInSameHouse.getFirst().getGender().equals(newPrefect.getGender())) {
+        return false;
+      }
+    }
+
+    return newPrefect.getSchoolYear() >= 5;
   }
 
   public Optional<StudentResponseDTO> deleteById(int id) {
@@ -79,7 +106,9 @@ public class StudentService {
         studentEntity.getLastName(),
         studentEntity.getFullName(),
         studentEntity.getHouse().getName(),
-        studentEntity.getSchoolYear()
+        studentEntity.getSchoolYear(),
+        studentEntity.getGender(),
+        studentEntity.isPrefect()
     );
 
     return dto;
@@ -91,7 +120,9 @@ public class StudentService {
         studentDTO.middleName(),
         studentDTO.lastName(),
         houseService.findById(studentDTO.house()).orElseThrow(),
-        studentDTO.schoolYear()
+        studentDTO.schoolYear(),
+        studentDTO.gender(),
+        studentDTO.isPrefect()
     );
 
     if(studentDTO.name() != null) {
@@ -99,5 +130,9 @@ public class StudentService {
     }
 
     return entity;
+  }
+
+  public StudentResponseDTO create(StudentRequestDTO student) {
+    return toDTO(studentRepository.save(fromDTO(student)));
   }
 }
